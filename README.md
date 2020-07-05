@@ -1,4 +1,5 @@
 [![tsdb4j](https://github.com/webfolderio/tsdb4j/workflows/tsdb4j/badge.svg)](https://github.com/webfolderio/tsdb4j/actions) [![Apache licensed](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/webfolderio/tsdb4j/blob/master/LICENSE)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwebfolderio%2Ftsdb4j.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwebfolderio%2Ftsdb4j?ref=badge_shield)
 
 ## What is tsdb4j
 
@@ -159,3 +160,7 @@ tsdb4j communicates with Akumuli (libakumuli) via JNI and neither use TCP, UDP o
 
 ### Statically Linked 
 `tsdb4j.dll`, `tsdb4j.so` and `tsdb4j.dylib` staticly linked with Boost, apr, apr-util and sqlite3. Unlike libakumuli it's not required to install third-party dependicies with `yum` or `apt-get`.
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fwebfolderio%2Ftsdb4j.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fwebfolderio%2Ftsdb4j?ref=badge_large)
