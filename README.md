@@ -11,7 +11,7 @@ tsdb4j is a Java driver for [Akumuli](https://github.com/akumuli/Akumuli) which 
 * **Zero Management, No Learning Curve**: It takes only seconds to download, install, and run it successfully.
 
 Supported Java Versions
------------------------
+---------------------
 
 Oracle/OpenJDK, GraalVM & Substrate VM.
 
@@ -20,7 +20,7 @@ Both the JRE and the JDK are suitable for use with this library.
 __Note__: We only support LTS versions (8 & 11).
 
 Supported Platforms
--------------------
+-----------------
 tsdb4j has been tested under Windows, Ubuntu, Centos, Alpline and MacOS.
 
 Example
@@ -78,7 +78,7 @@ public static void main(String[] args) {
 ```
 
 How it is tested
-----------------
+---------------
 tsdb4j is regularly built and tested on Windows, Linux and MacOS.
 
 License
@@ -86,7 +86,7 @@ License
 Licensed under the [Apache License](https://github.com/webfolderio/tsdb4j/blob/master/LICENSE).
 
 Dependencies
-------------
+-----------
 
 ### Integration with libakumuli
 

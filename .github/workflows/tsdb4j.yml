@@ -145,6 +145,7 @@ jobs:
       run: |
         yum -y update
         yum -y group install "Development Tools"
+        yum -y install java-11-openjdk-devel
         yum -y install wget
         yum -y install unzip
         mkdir -p archive
@@ -166,14 +167,6 @@ jobs:
       run: |
        mkdir -p archive
        cd archive
-        if [ ! -d "archive/jdk" ]; then
-          wget -q https://cdn.azul.com/zulu/bin/zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz
-          tar xfz zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz
-          mv zulu8.46.0.19-ca-jdk8.0.252-linux_x64/ jdk/
-          rm -f zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz
-        fi
-        export JAVA_HOME=$PWD/jdk
-        export PATH=$PATH:$JAVA_HOME/bin
         if [ ! -d "maven" ]; then
           cd archive
           wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
