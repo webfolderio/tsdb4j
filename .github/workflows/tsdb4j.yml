@@ -156,14 +156,6 @@ jobs:
           mv cmake-3.17.3-Linux-x86_64/ cmake/
         fi
         export PATH=$PATH:$PWD/cmake/bin
-        if [ ! -d "maven" ]; then
-          cd archive
-          wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-          tar xfz apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3/ maven/
-        fi
-        export PATH=$PATH:$PWD/maven/bin
-        cd ..
         cd build/nix
         if [ -f "install/lib/libakumuli.a" ]; then
           FAST_BUILD=true ./build.sh
@@ -172,6 +164,15 @@ jobs:
         fi
     - name: Test
       run: |
+        mkdir -p archive
+        cd archive
+        if [ ! -d "maven" ]; then
+          wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          tar xfz apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3/ maven/
+        fi
+        export PATH=$PATH:$PWD/maven/bin
+        cd ..
         mvn --no-transfer-progress -q -B -DskipTests package
         mvn --no-transfer-progress test
     - name: Archive library
