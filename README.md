@@ -88,6 +88,62 @@ License
 -------
 Licensed under the [Apache License](https://github.com/webfolderio/tsdb4j/blob/master/LICENSE).
 
+
+Integration with Maven
+----------------------
+
+To use the official release of tsdb4j, please use the following snippet in your `pom.xml` file.
+
+Add the following to your POM's `<dependencies>` tag:
+
+```xml
+<dependency>
+    <groupId>io.webfolder</groupId>
+    <artifactId>tsdb4j</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Add native library for Windows:
+
+```xml
+<dependency>
+    <groupId>io.webfolder</groupId>
+    <artifactId>tsdb4j-windows</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+Add
+native library for MacOS:
+
+```xml
+<dependency>
+    <groupId>io.webfolder</groupId>
+    <artifactId>tsdb4j-macos</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Add native library for Linux (Centos/Ubuntu):
+
+```xml
+<dependency>
+    <groupId>io.webfolder</groupId>
+    <artifactId>tsdb4j-linux</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Add native library for Alpine Linux:
+
+```xml
+<dependency>
+    <groupId>io.webfolder</groupId>
+    <artifactId>tsdb4j-alpine</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
 Dependencies
 -----------
 
