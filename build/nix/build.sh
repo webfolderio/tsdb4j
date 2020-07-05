@@ -2,14 +2,14 @@
 
 if [ -z "$BOOST_TOOLSET" ]
 then
-  export BOOST_TOOLSET=gcc
+  BOOST_TOOLSET=gcc
 fi
 
-export CFLAGS="-w -fPIC"
-export CXXFLAGS="-w -fPIC"
-export BUILD_DIR=$(pwd)
-export BOOST_ROOT=$BUILD_DIR/boost
-export INSTALL_DIR=$BUILD_DIR/install
+CFLAGS="-w -fPIC"
+CXXFLAGS="-w -fPIC"
+BUILD_DIR=$(pwd)
+BOOST_ROOT=$BUILD_DIR/boost
+INSTALL_DIR=$BUILD_DIR/install
 
 if [ "$FAST_BUILD" != "true" ]
 then
