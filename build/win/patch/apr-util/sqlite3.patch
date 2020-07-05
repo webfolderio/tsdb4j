@@ -1,0 +1,26 @@
+--- "dbd/apr_dbd_sqlite3.c.orig"	2011-11-29 02:00:26.000000000 +0300
++++ "dbd/apr_dbd_sqlite3.c"	2020-05-16 15:17:14.940301700 +0300
+@@ -16,7 +16,7 @@
+ 
+ #include "apu.h"
+ 
+-#if APU_HAVE_SQLITE3
++//#if APU_HAVE_SQLITE3
+ 
+ #include <ctype.h>
+ #include <stdlib.h>
+@@ -878,7 +878,7 @@
+     return res->tuples;
+ }
+ 
+-APU_MODULE_DECLARE_DATA const apr_dbd_driver_t apr_dbd_sqlite3_driver = {
++const apr_dbd_driver_t apr_dbd_sqlite3_driver = {
+     "sqlite3",
+     NULL,
+     dbd_sqlite3_native,
+@@ -911,4 +911,4 @@
+     dbd_sqlite3_pbselect,
+     dbd_sqlite3_datum_get
+ };
+-#endif
++//#endif

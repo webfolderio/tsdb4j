@@ -1,0 +1,233 @@
+name: tsdb4j
+
+on:
+  [push]
+jobs:
+  windows:
+    name: windows
+    runs-on: windows-latest
+    if: "contains(toJSON(github.event.commits.*.message), '[build windows]')"
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout project
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+        java-package: jdk
+        architecture: x64
+    - name: Cache m2, build\win
+      uses: actions/cache@v2
+      with:
+        path: |
+          %HOME%\.m2
+          build\win\build
+          build\win\dist
+          build\win\mingw64
+          build\win\ninja
+          build\win\cmake
+        key: windows-akumuli-0.8.80
+    - name: Build
+      run: |
+        cd build\win
+        if not exist "build\win\dist\libakumuli.a" (
+          build.bat
+          rd /s /q archive
+        ) else (
+          set FAST_BUILD=true
+          build.bat
+        )
+      shell: cmd
+    - name: Test
+      run: |
+         mvn --no-transfer-progress -q -B -DskipTests package
+         mvn --no-transfer-progress test
+      shell: cmd
+    - name: Archive library
+      uses: actions/upload-artifact@v1
+      with:
+        name: libtsdb4j-windows
+        path: src/main/resources/META-INF/tsdb4j.dll
+  mac:
+    name: macos
+    runs-on: macos-latest
+    if: "contains(toJSON(github.event.commits.*.message), '[build macos]')"
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout project
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+          java-package: jdk
+          architecture: x64
+      - name: Cache m2, archive, build/nix
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            build/nix
+          key: mac-akumuli-0.8.80
+      - name: Build
+        run: |
+          export CC=clang
+          export CXX=clang++
+          export BOOST_TOOLSET=clang
+          cd build/nix
+          if [ -f "install/lib/libakumuli.a" ]; then
+            FAST_BUILD=true ./build.sh
+          else
+            ./build.sh
+          fi
+      - name: Test
+        run: |
+           mvn --no-transfer-progress -q -B -DskipTests package
+           mvn --no-transfer-progress test
+      - name: Archive library
+        uses: actions/upload-artifact@v1
+        with:
+          name: libtsdb4j-macos
+          path: src/main/resources/META-INF/libtsdb4j.dylib
+  ubuntu:
+    name: ubuntu
+    runs-on: ubuntu-latest
+    if: "contains(toJSON(github.event.commits.*.message), '[build ubuntu]')"
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout project
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+          java-package: jdk
+          architecture: x64
+      - name: Cache m2, archive, build/nix
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            build/nix
+          key: ubuntu-akumuli-0.8.80
+      - name: Build
+        run: |
+          export CC=clang-9
+          export CXX=clang++-9
+          export BOOST_TOOLSET=clang
+          cd build/nix
+          if [ -f "install/lib/libakumuli.a" ]; then
+            FAST_BUILD=true ./build.sh
+          else
+            ./build.sh
+          fi
+      - name: Test
+        run: |
+           mvn --no-transfer-progress -q -B -DskipTests package
+           mvn --no-transfer-progress test
+      - name: Archive library
+        uses: actions/upload-artifact@v1
+        with:
+          name: libtsdb4j-ubuntu
+          path: src/main/resources/META-INF/libtsdb4j.so
+  centos:
+    name: centos
+    runs-on: ubuntu-latest
+    if: "contains(toJSON(github.event.commits.*.message), '[build centos]')"
+    container: centos:7
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout project
+    - name: Cache m2, archive, build/nix
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2
+          archive
+          build/nix
+        key: centos-akumuli-0.8.80
+    - name: Build
+      run: |
+        yum -y update
+        yum -y group install "Development Tools"
+        yum -y install wget
+        yum -y install unzip
+        mkdir -p archive
+        cd archive
+        if [ ! -d "cmake" ]; then
+          wget -q https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.tar.gz
+          tar xfz cmake-3.17.3-Linux-x86_64.tar.gz
+          mv cmake-3.17.3-Linux-x86_64/ cmake/
+        fi
+        cd ..
+        cd build/nix
+        if [ -f "install/lib/libakumuli.a" ]; then
+          FAST_BUILD=true ./build.sh
+        else
+          ./build.sh
+        fi
+    - name: Test
+      run: |
+       mkdir -p archive
+       cd archive
+        if [ ! -d "archive/jdk" ]; then
+          wget -q https://cdn.azul.com/zulu/bin/zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz
+          tar xfz zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz
+          mv zulu8.46.0.19-ca-jdk8.0.252-linux_x64/ jdk/
+          rm -f zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz
+        fi
+        export JAVA_HOME=$PWD/jdk
+        export PATH=$PATH:$JAVA_HOME/bin
+        if [ ! -d "maven" ]; then
+          cd archive
+          wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          tar xfz apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3/ maven/
+        fi
+        export PATH=$PATH:$PWD/maven/bin
+        cd ..
+        mvn --no-transfer-progress -q -B -DskipTests package
+        mvn --no-transfer-progress test
+    - name: Archive library
+      uses: actions/upload-artifact@v1
+      with:
+        name: libtsdb4j-centos
+        path: src/main/resources/META-INF/libtsdb4j.so
+  alpline:
+    name: alpline
+    runs-on: ubuntu-latest
+    if: "contains(toJSON(github.event.commits.*.message), '[build alpline]')"
+    container: azul/zulu-openjdk-alpine:8
+    steps:
+    - uses: actions/checkout@v2
+      name: Checkout project
+    - name: Cache m2, archive, build/nix
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.m2
+          build/nix
+        key: alpline-akumuli-0.8.80
+    - name: Build
+      run: |
+        apk add --no-cache curl tar bash make cmake build-base
+        cd build/nix
+        if [ -f "install/lib/libakumuli.a" ]; then
+          FAST_BUILD=true ./build.sh
+        else
+          ./build.sh
+        fi
+    - name: Test
+      run: |
+        export JAVA_HOME=/usr/lib/jvm/default-jvm
+        mkdir -p archive
+        cd archive
+        if [ ! -d "maven" ]; then
+          wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+          tar xfz apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3/ maven/
+        fi
+        export PATH=$PATH:$PWD/maven/bin
+        cd ..
+        mvn --no-transfer-progress -q -B -DskipTests package
+        mvn --no-transfer-progress test
+    - name: Archive library
+      uses: actions/upload-artifact@v1
+      with:
+        name: libtsdb4j-alpline
+        path: src/main/resources/META-INF/libtsdb4j.so

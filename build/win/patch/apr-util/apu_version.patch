@@ -1,0 +1,15 @@
+--- include/apu_version.h	2020-05-05 11:23:15.172891100 +0300
++++ include/apu_version.h.orig	2020-05-05 11:25:27.339525600 +0300
+@@ -114,9 +114,9 @@
+ 
+ /** An alternative formatted string of APU's version */
+ /* macro for Win32 .rc files using numeric csv representation */
+-#define APU_VERSION_STRING_CSV APU_MAJOR_VERSION ##, \
+-                             ##APU_MINOR_VERSION ##, \
+-                             ##APU_PATCH_VERSION
++#define APU_VERSION_STRING_CSV APU_MAJOR_VERSION, \
++                             APU_MINOR_VERSION, \
++                             APU_PATCH_VERSION
+ 
+ 
+ #ifndef APU_VERSION_ONLY

@@ -1,0 +1,21 @@
+--- "dbd/apr_dbd.c.orig"	2017-04-02 20:57:23.000000000 +0300
++++ "dbd/apr_dbd.c"	2020-05-16 15:29:19.619005900 +0300
+@@ -127,9 +127,7 @@
+ #if APU_HAVE_PGSQL
+     DRIVER_LOAD("pgsql", apr_dbd_pgsql_driver, pool);
+ #endif
+-#if APU_HAVE_SQLITE3
+     DRIVER_LOAD("sqlite3", apr_dbd_sqlite3_driver, pool);
+-#endif
+ #if APU_HAVE_SQLITE2
+     DRIVER_LOAD("sqlite2", apr_dbd_sqlite2_driver, pool);
+ #endif
+@@ -137,7 +135,7 @@
+     DRIVER_LOAD("oracle", apr_dbd_oracle_driver, pool);
+ #endif
+ #if APU_HAVE_ODBC
+-    DRIVER_LOAD("odbc", apr_dbd_odbc_driver, pool);
++    //DRIVER_LOAD("odbc", apr_dbd_odbc_driver, pool);
+ #endif
+ #if APU_HAVE_SOME_OTHER_BACKEND
+     DRIVER_LOAD("firebird", apr_dbd_other_driver, pool);

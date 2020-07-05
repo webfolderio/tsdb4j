@@ -1,0 +1,727 @@
+diff --git CMakeLists.txt CMakeLists.txt
+index 2b71aeb..f5a21d9 100644
+--- CMakeLists.txt
++++ CMakeLists.txt
+@@ -6,6 +6,8 @@ set(APP_VERSION_MINOR "8")
+ set(APP_VERSION_PATCH "80")
+ string(TIMESTAMP APP_COMPILATION_TIME "%Y%m%d")
+ 
++unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
++
+ set(APP_VERSION "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP_VERSION_PATCH}")
+ add_definitions(-DAKU_VERSION="${APP_VERSION}" -DAKU_BUILD_INFO="${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} ${APP_COMPILATION_TIME}")
+ set(CMAKE_VERBOSE_MAKEFILE ON)
+@@ -26,6 +28,9 @@ else()
+     if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+         set(APP_ARCH "amd64")
+     endif()
++    if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "AMD64")
++        set(APP_ARCH "amd64")
++    endif()
+     if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7l")
+         set(APP_ARCH "arm")
+     endif()
+@@ -45,27 +50,38 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+ if (APPLE)
+ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-delete-non-virtual-dtor -Wno-deprecated -Wno-pessimizing-move")
+ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-delete-non-virtual-dtor -Wno-deprecated -Wno-pessimizing-move")
+-endif(APPLE)
+-
++elseif(WIN32)
++    set(CMAKE_CXX_FLAGS_DEBUG
++            "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -w -ggdb -std=c++11")
++    set(CMAKE_C_FLAGS_DEBUG
++            "${CMAKE_C_FLAGS_DEBUG} -DDEBUG -w -ggdb -std=c99")
++
++  # minimize windows.h content
++  add_definitions(-DWIN32_LEAN_AND_MEAN)
++  add_definitions(-DNOGDI -DPRId64="lld")
++  add_definitions(-DAPU_DECLARE_STATIC)
++  add_definitions(-DAPR_DECLARE_STATIC)
++else()
+ # Debug flags
+ set(CMAKE_CXX_FLAGS_DEBUG
+  "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG -Wall -Werror -ggdb -fsanitize=address -std=c++11")
+ set(CMAKE_C_FLAGS_DEBUG
+  "${CMAKE_C_FLAGS_DEBUG} -DDEBUG -Wall -Werror -ggdb -fsanitize=address -std=c99")
++endif()
+ 
+ # Generic release flags
+ set(CMAKE_CXX_FLAGS_RELEASEGEN
+- "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Werror -ffast-math -funroll-loops -mtune=generic -O3 -std=c++11")
++ "${CMAKE_CXX_FLAGS_RELEASE} -w -ffast-math -funroll-loops -mtune=generic -O3 -std=c++11")
+ set(CMAKE_C_FLAGS_RELEASEGEN
+- "${CMAKE_C_FLAGS_RELEASE} -Wall -Werror -ffast-math -funroll-loops -mtune=generic -O3 -std=c99")
++ "${CMAKE_C_FLAGS_RELEASE} -w -ffast-math -funroll-loops -mtune=generic -O3 -std=c99")
+ 
+ # Release flags
+ if("${APP_ARCH}" STREQUAL "amd64")
+     # Use this flags only on amd64
+     set(CMAKE_CXX_FLAGS_RELEASE 
+-     "${CMAKE_CXX_FLAGS_RELEASE} -Wall -Werror -ffast-math -funroll-loops -march=corei7-avx -O3 -std=c++11")
++     "${CMAKE_CXX_FLAGS_RELEASE} -w -ffast-math -funroll-loops -march=corei7-avx -O3 -std=c++11")
+     set(CMAKE_C_FLAGS_RELEASE
+-     "${CMAKE_C_FLAGS_RELEASE} -Wall -Werror -ffast-math -funroll-loops -march=corei7-avx -O3 -std=c99")
++     "${CMAKE_C_FLAGS_RELEASE} -w -ffast-math -funroll-loops -march=corei7-avx -O3 -std=c99")
+     message("amd64 CXXFLAGS ${CMAKE_CXX_FLAGS_RELEASE}")
+ elseif("${APP_ARCH}" STREQUAL "i386")
+     # Use this flags only on amd64
+@@ -102,13 +118,11 @@ else()
+     message("unknown CXXFLAGS ${CMAKE_CXX_FLAGS_RELEASE}")
+ endif()
+ 
+-set(Boost_USE_STATIC_LIBS OFF)
++set(Boost_USE_STATIC_LIBS ON)
+ set(Boost_USE_MULTITHREADED ON)  
+ set(Boost_USE_STATIC_RUNTIME OFF) 
+-find_package(Boost 1.50.0
++find_package(Boost 1.65.1
+     COMPONENTS
+-    unit_test_framework
+-    program_options
+     system
+     thread
+     filesystem
+@@ -117,7 +131,7 @@ find_package(Boost 1.50.0
+     REQUIRED
+ )
+ 
+-find_package(Log4Cxx REQUIRED)
++#find_package(Log4Cxx REQUIRED)
+ find_package(Sqlite3 REQUIRED)
+ find_package(APR REQUIRED)
+ find_package(Threads REQUIRED)
+@@ -130,7 +144,7 @@ include_directories(${Boost_INCLUDE_DIRS})
+ include_directories("${APR_INCLUDE_DIR}")
+ include_directories("${APRUTIL_INCLUDE_DIR}")
+ include_directories("${SQLITE3_INCLUDE_DIR}")
+-include_directories("${LIBMICROHTTPD_INCLUDE_DIRS}")
++#include_directories("${LIBMICROHTTPD_INCLUDE_DIRS}")
+ include_directories("${muparser_INCLUDES}")
+ 
+ add_definitions(-fvisibility=hidden)
+@@ -145,13 +159,13 @@ include(GNUInstallDirs)
+ include_directories(./include)
+ 
+ add_subdirectory(libakumuli)
+-add_subdirectory(akumulid)
+-add_subdirectory(perftests)
+-add_subdirectory(functests)
+-add_subdirectory(fuzzers)
++#add_subdirectory(akumulid)
++#add_subdirectory(perftests)
++#add_subdirectory(functests)
++#add_subdirectory(fuzzers)
+ 
+-enable_testing()
+-add_subdirectory(unittests)
++#enable_testing()
++#add_subdirectory(unittests)
+ 
+ file(COPY
+     docker/Dockerfile
+diff --git include/akumuli.h include/akumuli.h
+index 0d69664..c486755 100644
+--- include/akumuli.h
++++ include/akumuli.h
+@@ -33,7 +33,7 @@
+ #define AKU_EXPORT
+ #endif
+ #else
+-#define AKU_EXPORT __declspec(dllexport)
++#define AKU_EXPORT extern "C" __attribute__((visibility("default")))
+ #endif
+ 
+ 
+diff --git libakumuli/CMakeLists.txt libakumuli/CMakeLists.txt
+index 622f4f6..0203b7b 100644
+--- libakumuli/CMakeLists.txt
++++ libakumuli/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-add_library(akumuli SHARED
++add_library(akumuli STATIC
+     akumuli.cpp
+     metadatastorage.cpp
+     datetime.cpp
+@@ -64,7 +64,7 @@ set_property(TARGET roaring PROPERTY POSITION_INDEPENDENT_CODE ON)
+ set_property(TARGET roaring PROPERTY C_STANDARD 99)
+ 
+ target_link_libraries(akumuli
+-    jemalloc
++    "${JEMALLOC_LIBRARY}"
+     "${SQLITE3_LIBRARY}"
+     "${APR_LIBRARY}"
+     "${APRUTIL_LIBRARY}"
+@@ -72,7 +72,10 @@ target_link_libraries(akumuli
+     ${muparser_LIBRARIES}
+     lz4
+     roaring
+-    pthread)
++    pthread
++    ws2_32
++    mswsock
++    Rpcrt4)
+ 
+ # Shared object version: "major.minor.micro"
+ # - micro updated every release when there is no API/ABI changes
+@@ -96,6 +99,20 @@ install(
+         ${CMAKE_INSTALL_LIBDIR}
+ )
+ 
++install(
++    TARGETS
++        lz4
++    LIBRARY DESTINATION
++        ${CMAKE_INSTALL_LIBDIR}
++)
++
++install(
++    TARGETS
++        roaring
++    LIBRARY DESTINATION
++        ${CMAKE_INSTALL_LIBDIR}
++)
++
+ install(
+     FILES ../include/akumuli_version.h
+ 	  ../include/akumuli_config.h
+diff --git libakumuli/storage2.cpp libakumuli/storage2.cpp
+index d8acb4a..6a4595b 100644
+--- libakumuli/storage2.cpp
++++ libakumuli/storage2.cpp
+@@ -41,6 +41,92 @@
+ #include "fcntl_compat.h"
+ #include <cstdlib>
+ 
++#ifdef _WIN32
++extern "C" {
++
++#include "winioctl.h"
++
++typedef HANDLE handle_t;
++
++bool prepare_fallocate_wrapper()
++{
++    HANDLE cur_token;
++    TOKEN_PRIVILEGES new_tp;
++    LUID luid;
++    if (!OpenProcessToken (GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
++                           &cur_token))
++        return false;
++    if (!LookupPrivilegeValue (NULL, SE_MANAGE_VOLUME_NAME, &luid))
++    {
++        CloseHandle(cur_token); //I'd have used ON_BLOCK_EXIT, but want to keep dependency count down :)
++        return false;
++    }
++    memset(&new_tp, 0, sizeof(TOKEN_PRIVILEGES));
++    new_tp.PrivilegeCount = 1;
++    new_tp.Privileges[0].Luid = luid;
++    new_tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
++
++    if (!AdjustTokenPrivileges (cur_token, FALSE, &new_tp, sizeof(TOKEN_PRIVILEGES), NULL, NULL))
++    {
++        CloseHandle (cur_token);
++        return false;
++    }
++    return true;
++}
++
++int fallocate_wrapper(handle_t hndl, long long int size_to_reserve)
++{
++    if (size_to_reserve <= 0)
++        return 0;
++
++    LARGE_INTEGER minus_one = {0}, zero = {0};
++    minus_one.QuadPart = -1;
++
++    //Get the current file position
++    LARGE_INTEGER old_pos = {0};
++    if (!SetFilePointerEx(hndl, zero, &old_pos, FILE_CURRENT))
++        return -1;
++
++    //Movie file position to the new end. These calls do NOT result in the actual allocation of
++    //new blocks, but they must succeed.
++    LARGE_INTEGER new_pos={0};
++    new_pos.QuadPart=size_to_reserve;
++    if (!SetFilePointerEx(hndl, new_pos, NULL, FILE_END))
++        return -1;
++    if (!SetEndOfFile(hndl))
++        return -1;
++
++    //Try to use the SetFileValidData call
++    if (SetFileValidData(hndl, size_to_reserve)!=0)
++        return 0; //Success!
++
++    //Bummer. Can't expand the file this way - now try sparse files
++    DWORD temp=0;
++    //Mark the file as sparse.
++    if (DeviceIoControl(hndl, FSCTL_SET_SPARSE, NULL, 0, NULL, 0,  &temp, NULL)!=0)
++    {
++        FILE_ZERO_DATA_INFORMATION range;
++        range.FileOffset = old_pos;
++        range.BeyondFinalZero.QuadPart = old_pos.QuadPart+size_to_reserve;
++        //Actually set the sparse range.
++        if (DeviceIoControl(hndl, FSCTL_SET_ZERO_DATA, &range, sizeof(range), NULL, 0, &temp, NULL))
++            return 0; //Done
++    }
++
++    //Everything failed. Cry :( Write one byte at the end to force the actual
++    //allocation.
++    if (!SetFilePointerEx(hndl, minus_one, NULL, FILE_END))
++        return -1;
++    char initializer_buf [1] = {1};
++    DWORD written=0;
++    if (!WriteFile(hndl, initializer_buf, 1, &written, NULL))
++        return -1;
++
++    return 0;
++}
++}
++#endif
++
+ namespace Akumuli {
+ 
+ // Utility functions & classes //
+@@ -1544,11 +1630,11 @@ aku_Status Storage::new_database( const char     *base_file_name
+     // Check for max volume size
+     const u64 MAX_SIZE = 0x100000000ull * 4096 - 1;  // 15TB
+     const u64 MIN_SIZE = 0x100000;  // 1MB
+-    if (volume_size > MAX_SIZE) {
+-        Logger::msg(AKU_LOG_ERROR, "Volume size is too big: " + std::to_string(volume_size) + ", it can't be greater than 15TB");
+-        return AKU_EBAD_ARG;
+-    } else if (volume_size < MIN_SIZE) {
+-        Logger::msg(AKU_LOG_ERROR, "Volume size is too small: " + std::to_string(volume_size) + ", it can't be less than 1MB");
++        if (volume_size > MAX_SIZE) {
++            Logger::msg(AKU_LOG_ERROR, "Volume size is too big: " + std::to_string(volume_size) + ", it can't be greater than 15TB");
++            return AKU_EBAD_ARG;
++        } else if (volume_size < MIN_SIZE) {
++            Logger::msg(AKU_LOG_ERROR, "Volume size is too small: " + std::to_string(volume_size) + ", it can't be less than 1MB");
+         return AKU_EBAD_ARG;
+     }
+     // Create volumes and metapage
+@@ -1605,7 +1691,13 @@ aku_Status Storage::new_database( const char     *base_file_name
+                 Logger::msg(AKU_LOG_ERROR, "Can't open file '" + p + "' reason: " + error.message() + ". Skip.");
+                 break;
+             }
+-            int ret = posix_fallocate(fd, 0, std::get<0>(path));
++            int ret = -1;
++#ifdef _WIN32
++            prepare_fallocate_wrapper();
++            ret = fallocate_wrapper((HANDLE) _get_osfhandle(fd), std::get<0>(path));
++#else
++            ret = posix_fallocate(fd, 0, std::get<0>(path));
++#endif
+             ::close(fd);
+             if (ret == 0) {
+                 Logger::msg(AKU_LOG_INFO, "Disk space for " + p + " preallocated");
+@@ -1625,10 +1717,10 @@ aku_Status Storage::new_database( const char     *base_file_name
+     }
+     if (num_volumes == 0) {
+         Logger::msg(AKU_LOG_INFO, "Creating expandable file storage");
+-        create_metadata_page(base_file_name, sqlitepath.c_str(), mpaths, msizes, "ExpandableFileStorage");
++        create_metadata_page(base_file_name, sqlitepath.string().c_str(), mpaths, msizes, "ExpandableFileStorage");
+     } else {
+         Logger::msg(AKU_LOG_INFO, "Creating fixed file storage");
+-        create_metadata_page(base_file_name, sqlitepath.c_str(), mpaths, msizes, "FixedSizeFileStorage");
++        create_metadata_page(base_file_name, sqlitepath.string().c_str(), mpaths, msizes, "FixedSizeFileStorage");
+     }
+     return AKU_SUCCESS;
+ }
+diff --git libakumuli/storage_engine/blockstore.cpp libakumuli/storage_engine/blockstore.cpp
+index 8c80546..b3ff079 100644
+--- libakumuli/storage_engine/blockstore.cpp
++++ libakumuli/storage_engine/blockstore.cpp
+@@ -453,8 +453,8 @@ std::unique_ptr<Volume> ExpandableFileStorage::create_new_volume(u32 id) {
+     auto pp = prev_path.parent_path();
+     std::string basename = std::string(db_name_) + "_" + std::to_string(id) + ".vol";
+     boost::filesystem::path new_path = pp / basename;
+-    Volume::create_new(new_path.c_str(), volumes_[prev_id]->get_size());
+-    return Volume::open_existing(new_path.c_str(), 0);
++    Volume::create_new(new_path.string().c_str(), volumes_[prev_id]->get_size());
++    return Volume::open_existing(new_path.string().c_str(), 0);
+ }
+ 
+ void ExpandableFileStorage::adjust_current_volume() {
+diff --git libakumuli/storage_engine/input_log.cpp libakumuli/storage_engine/input_log.cpp
+index 29e52f4..a54b96c 100644
+--- libakumuli/storage_engine/input_log.cpp
++++ libakumuli/storage_engine/input_log.cpp
+@@ -600,7 +600,7 @@ void InputLog::find_volumes() {
+ 
+ void InputLog::open_volumes() {
+     for (const auto& path: available_volumes_) {
+-        std::unique_ptr<LZ4Volume> volume(new LZ4Volume(path.c_str()));
++        std::unique_ptr<LZ4Volume> volume(new LZ4Volume(path.string().c_str()));
+         volumes_.push_back(std::move(volume));
+         volume_counter_++;
+     }
+diff --git libakumuli/storage_engine/volume.h libakumuli/storage_engine/volume.h
+index a6d561d..91cfd1c 100644
+--- libakumuli/storage_engine/volume.h
++++ libakumuli/storage_engine/volume.h
+@@ -270,7 +270,6 @@ class Volume {
+     //u32         synced_pos_;
+     std::string path_;
+     // Optional mmap
+-    std::unique_ptr<MemoryMappedFile> mmap_;
+     const u8* mmap_ptr_;
+ 
+     Volume(const char* path, size_t write_pos);
+diff --git libakumuli/util.cpp libakumuli/util.cpp
+index 5b9237f..9d0ef57 100644
+--- libakumuli/util.cpp
++++ libakumuli/util.cpp
+@@ -23,8 +23,6 @@
+ #include <sstream>
+ #include <iostream>
+ 
+-#include <sys/mman.h>
+-
+ #include "log_iface.h"
+ 
+ namespace Akumuli
+@@ -60,232 +58,6 @@ void invoke_panic_handler(std::string const& message) {
+     invoke_panic_handler(message.c_str());
+ }
+ 
+-MemoryMappedFile::MemoryMappedFile(const char* file_name, bool enable_huge_tlb)
+-    : mem_pool_()
+-    , mmap_()
+-    , fp_()
+-    , finfo_()
+-    , status_(APR_EINIT)
+-    , path_(file_name)
+-    , enable_huge_tlb_(enable_huge_tlb)
+-{
+-    map_file();
+-}
+-
+-void MemoryMappedFile::move_file(const char* new_name) {
+-    status_ = apr_file_rename(path_.c_str(), new_name, mem_pool_);
+-    if (status_ == APR_SUCCESS) {
+-        path_ = new_name;
+-    }
+-}
+-
+-void MemoryMappedFile::delete_file() {
+-    using namespace std;
+-    status_ = apr_file_remove(path_.c_str(), mem_pool_);
+-    if (status_ != APR_SUCCESS) {
+-        stringstream fmt;
+-        fmt << "Can't remove file " << path_ << " error " << error_message();
+-        Logger::msg(AKU_LOG_ERROR, fmt.str().c_str());
+-    }
+-}
+-
+-apr_status_t MemoryMappedFile::map_file() {
+-    using namespace std;
+-    int success_count = 0;
+-    status_ = apr_pool_create(&mem_pool_, NULL);
+-    if (status_ == APR_SUCCESS) {
+-        success_count++;
+-        status_ = apr_file_open(&fp_, path_.c_str(), APR_WRITE|APR_READ, APR_OS_DEFAULT, mem_pool_);
+-        if (status_ == APR_SUCCESS) {
+-            success_count++;
+-            status_ = apr_file_lock(fp_, APR_FLOCK_EXCLUSIVE);
+-            if (status_ == APR_SUCCESS) {
+-                // No need to increment success_count, no cleanup needed for apr_file_lock
+-                status_ = apr_file_info_get(&finfo_, APR_FINFO_SIZE, fp_);
+-                if (status_ == APR_SUCCESS) {
+-                    success_count++;
+-                    apr_int32_t flags = APR_MMAP_WRITE | APR_MMAP_READ;
+-                    if (enable_huge_tlb_) {
+-#if defined MAP_HUGETLB
+-						flags |= MAP_HUGETLB;
+-#endif
+-                    }
+-                    status_ = apr_mmap_create(&mmap_, fp_, 0, finfo_.size, flags, mem_pool_);
+-                    if (status_ == APR_SUCCESS)
+-                        success_count++; }}}}
+-
+-    if (status_ != APR_SUCCESS) {
+-        free_resources(success_count);
+-        stringstream err;
+-        err << "Can't mmap file " << path_ << ", error " << error_message() << " on step " << success_count;
+-        Logger::msg(AKU_LOG_ERROR, err.str().c_str());
+-    }
+-    return status_;
+-}
+-
+-void MemoryMappedFile::remap_file_destructive() {
+-    using namespace std;
+-    apr_off_t file_size = finfo_.size;
+-    free_resources(4);
+-    apr_pool_t* pool;
+-    apr_file_t* file_ptr;
+-    apr_status_t status;
+-    int success_counter = 0;
+-    status = apr_pool_create(&pool, NULL);
+-    if (status == APR_SUCCESS) {
+-        success_counter++;
+-        status = apr_file_open(&file_ptr, path_.c_str(), APR_WRITE, APR_OS_DEFAULT, pool);
+-        if (status == APR_SUCCESS) {
+-            success_counter++;
+-            status = apr_file_trunc(file_ptr, 0);
+-            if (status == APR_SUCCESS) {
+-                success_counter++;
+-                status = apr_file_trunc(file_ptr, file_size);
+-                if (status == APR_SUCCESS) {
+-                    success_counter++;
+-                }
+-            }
+-        }
+-    }
+-    switch(success_counter) {
+-        case 4:
+-        case 3:
+-        case 2:
+-            apr_file_close(file_ptr);
+-        case 1:
+-            apr_pool_destroy(pool);
+-    };
+-    if (status != APR_SUCCESS) {
+-        stringstream err;
+-        err << "Can't remap file " << path_ << " error " << apr_error_message(status) << " on step " << success_counter;
+-        Logger::msg(AKU_LOG_ERROR, err.str().c_str());
+-        AKU_PANIC("can't remap file");
+-    }
+-    status = map_file();
+-    if (status != APR_SUCCESS) {
+-        stringstream err;
+-        err << "Can't remap file " << path_ << " error " << apr_error_message(status) << " on step " << success_counter;
+-        Logger::msg(AKU_LOG_ERROR, err.str().c_str());
+-        AKU_PANIC("can't remap file");
+-    }
+-}
+-
+-bool MemoryMappedFile::is_bad() const {
+-    return status_ != APR_SUCCESS;
+-}
+-
+-std::string MemoryMappedFile::error_message() const {
+-    char error_message[0x100];
+-    apr_strerror(status_, error_message, 0x100);
+-    return std::string(error_message);
+-}
+-
+-apr_status_t MemoryMappedFile::status_code() const {
+-    return status_;
+-}
+-
+-void MemoryMappedFile::panic_if_bad() {
+-    if (status_ != APR_SUCCESS) {
+-        char error_message[0x100];
+-        apr_strerror(status_, error_message, 0x100);
+-        AKU_PANIC(error_message);
+-    }
+-}
+-
+-/* Why not std::unique_ptr with custom deleter?
+- * To make finalization order explicit and prevent null-reference errors in
+- * APR finalizers. Resource finalizers in APR can't handle null pointers,
+- * so we will need to wrap each `close` or `destroy` or whatsever
+- * function to be able to pass it to unique_ptr c-tor as deleter.
+- */
+-
+-void MemoryMappedFile::free_resources(int cnt)
+-{
+-    switch(cnt)
+-    {
+-    default:
+-    case 4:
+-        apr_mmap_delete(mmap_);
+-    case 3:
+-    case 2:
+-        apr_file_close(fp_);
+-    case 1:
+-        apr_pool_destroy(mem_pool_);
+-    };
+-}
+-
+-MemoryMappedFile::~MemoryMappedFile() {
+-    if (!is_bad())
+-        free_resources(4);
+-}
+-
+-void* MemoryMappedFile::get_pointer() const {
+-    return mmap_->mm;
+-}
+-
+-size_t MemoryMappedFile::get_size() const {
+-    return mmap_->size;
+-}
+-
+-apr_status_t MemoryMappedFile::flush() {
+-    return flush(0, mmap_->size);
+-}
+-
+-aku_Status MemoryMappedFile::protect_all() {
+-    if (!mprotect(mmap_->mm, mmap_->size, PROT_READ)) {
+-        return AKU_SUCCESS;
+-    }
+-    int err = errno;
+-    aku_Status ret = AKU_EGENERAL;
+-    switch(err) {
+-    case ENOMEM:
+-        ret = AKU_ENO_MEM;
+-        break;
+-    case EACCES:
+-        ret = AKU_EBAD_DATA;
+-        break;
+-    };
+-    return ret;
+-}
+-
+-aku_Status MemoryMappedFile::unprotect_all() {
+-    if (!mprotect(mmap_->mm, mmap_->size, PROT_WRITE)) {
+-        return AKU_SUCCESS;
+-    }
+-    int err = errno;
+-    aku_Status ret = AKU_EGENERAL;
+-    switch(err) {
+-    case ENOMEM:
+-        ret = AKU_ENO_MEM;
+-        break;
+-    case EACCES:
+-        ret = AKU_EBAD_DATA;
+-        break;
+-    };
+-    return ret;
+-}
+-
+-apr_status_t MemoryMappedFile::flush(size_t from, size_t to) {
+-    void* p = align_to_page(static_cast<char*>(mmap_->mm) + from, get_page_size());
+-    size_t len = to - from;
+-    if (msync(p, len, MS_SYNC) == 0) {
+-        return AKU_SUCCESS;
+-    }
+-    int e = errno;
+-    switch(e) {
+-    case EBUSY:
+-        Logger::msg(AKU_LOG_ERROR, "Can't msync, busy");
+-        return AKU_EBUSY;
+-    case EINVAL:
+-    case ENOMEM:
+-        Logger::msg(AKU_LOG_ERROR, "Invalid args passed to msync");
+-        return AKU_EBAD_ARG;
+-    default:
+-        Logger::msg(AKU_LOG_ERROR, "Unknown msync error");
+-    };
+-    return AKU_EGENERAL;
+-}
+-
+ i64 log2(i64 value) {
+     return static_cast<i64>(8*sizeof(u64) - __builtin_clzll((u64)value) - 1);
+ }
+@@ -301,39 +73,6 @@ void* align_to_page(void* ptr, size_t page_size) {
+         reinterpret_cast<unsigned long long>(ptr) & ~(page_size - 1));
+ }
+ 
+-void prefetch_mem(const void* ptr, size_t mem_size) {
+-    auto aptr = align_to_page(ptr, get_page_size());
+-    int err = madvise(const_cast<void*>(aptr), mem_size, MADV_WILLNEED);
+-    switch(err) {
+-    case EBADF:
+-        AKU_PANIC("(madvise) the map exists, but the area maps something that isn't a file");
+-    case EINVAL:
+-        // Severe error - panic!
+-        AKU_PANIC("(madvise) the value is negative | addr is not page-aligned | advice is not a valid value |...");
+-    case EAGAIN: //  A kernel resource was temporarily unavailable.
+-    case EIO:    // Paging  in  this  area  would  exceed  the process's maximum resident set size.
+-    case ENOMEM: // Not enough memory: paging in failed.
+-    default:
+-        break;
+-    };
+-    auto begin = static_cast<const char*>(aptr);
+-    auto end = begin + mem_size;
+-    auto step = get_page_size();
+-    volatile char acc = 0;
+-    while(begin < end) {
+-        acc += *begin;
+-        begin += step;
+-    }
+-}
+-
+-size_t get_page_size() {
+-    auto page_size = sysconf(_SC_PAGESIZE);
+-    if (AKU_UNLIKELY(page_size < 0)) {
+-        AKU_PANIC("sysconf error, can't get _SC_PAGESIZE");
+-    }
+-    return static_cast<size_t>(page_size);
+-}
+-
+ Rand::Rand()
+     : rand_()
+ {
+@@ -347,7 +86,7 @@ u32 Rand::operator () () {
+ }
+ 
+ RWLock::RWLock()
+-    : rwlock_ PTHREAD_RWLOCK_INITIALIZER
++    : rwlock_(PTHREAD_RWLOCK_INITIALIZER)
+ {
+     int error = pthread_rwlock_init(&rwlock_, nullptr);
+     if (error) {
+diff --git libakumuli/util.h libakumuli/util.h
+index f42a06e..e153fe2 100644
+--- libakumuli/util.h
++++ libakumuli/util.h
+@@ -45,58 +45,13 @@ void invoke_panic_handler(const char* message);
+ 
+ void invoke_panic_handler(std::string const& message);
+ 
+-/** Memory mapped file
+-      * maps all file on construction
+-      */
+-class MemoryMappedFile {
+-    apr_pool_t*  mem_pool_;  //< local memory pool
+-    apr_mmap_t*  mmap_;
+-    apr_file_t*  fp_;
+-    apr_finfo_t  finfo_;
+-    apr_status_t status_;
+-    std::string  path_;
+-    const bool   enable_huge_tlb_;
+-
+-public:
+-    MemoryMappedFile(const char* file_name, bool enable_huge_tlb);
+-    ~MemoryMappedFile();
+-    void move_file(const char* new_name);
+-    void   delete_file();
+-    void*  get_pointer() const;
+-    size_t get_size() const;
+-    //! Flush only part of the page
+-    apr_status_t flush(size_t from, size_t to);
+-    //! Flush full page
+-    apr_status_t flush();
+-    bool         is_bad() const;
+-    std::string  error_message() const;
+-    void         panic_if_bad();
+-    apr_status_t status_code() const;
+-    //! Remap file in a destructive way (all file content is lost)
+-    void remap_file_destructive();
+-    //! Protect page from writing
+-    aku_Status protect_all();
+-    //! Make page available for writing
+-    aku_Status unprotect_all();
+-
+-private:
+-    //! Map file into virtual address space
+-    apr_status_t map_file();
+-    //! Free OS resources associated with object
+-    void free_resources(int cnt);
+-};
+-
+ //! Fast integer logarithm
+ i64 log2(i64 value);
+ 
+ size_t get_page_size();
+ 
+-const void* align_to_page(const void* ptr, size_t get_page_size);
+-
+ void* align_to_page(void* ptr, size_t get_page_size);
+ 
+-void prefetch_mem(const void* ptr, size_t mem_size);
+-    
+ class Rand {
+     std::ranlux48_base rand_;
+ 
