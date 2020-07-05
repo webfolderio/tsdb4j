@@ -1,4 +1,4 @@
-[![tsdb4j](https://github.com/webfolderio/tsdb4j/workflows/tsdb4j/badge.svg)](https://github.com/webfolderio/tsdb4j/actions)
+[![tsdb4j](https://github.com/webfolderio/tsdb4j/workflows/tsdb4j/badge.svg)](https://github.com/webfolderio/tsdb4j/actions) [![Apache licensed](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/micro4j/tsdb4j/blob/master/LICENSE)
 
 ## What is tsdb4j
 
