@@ -49,7 +49,7 @@ jobs:
         path: src/main/resources/META-INF/tsdb4j.dll
   mac:
     name: macos
-    runs-on: macos-latest
+    runs-on: macos-10.15
     if: "contains(toJSON(github.event.commits.*.message), '[build macos]')"
     steps:
       - uses: actions/checkout@v2
