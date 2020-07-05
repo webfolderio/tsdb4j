@@ -26,6 +26,8 @@ tsdb4j has been tested under Windows, Ubuntu, Centos, Alpline and MacOS.
 Example
 ------
 
+[Select.java](https://github.com/webfolderio/tsdb4j/blob/master/src/test/java/io/webfolder/tsdb4j/example/Select.java)
+
 ```java
 public static void main(String[] args) {
   Path path = createTempDirectory("tsdb4j");
