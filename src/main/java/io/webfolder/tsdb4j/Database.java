@@ -22,7 +22,7 @@ public class Database {
     // temporary directory location
     private static final Path tmpdir = get(System.getProperty("java.io.tmpdir")).toAbsolutePath();
 
-    private static final String version = "0.1.0";
+    private static final String version = "1.0.0";
 
     private static final String OS_NAME = System.getProperty("os.name").toLowerCase(ENGLISH);
 

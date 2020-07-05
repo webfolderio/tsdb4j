@@ -172,10 +172,10 @@ jobs:
       with:
         name: libtsdb4j-centos
         path: src/main/resources/META-INF/libtsdb4j.so
-  alpline:
-    name: alpline
+  alpine:
+    name: alpine
     runs-on: ubuntu-latest
-    if: "contains(toJSON(github.event.commits.*.message), '[build alpline]')"
+    if: "contains(toJSON(github.event.commits.*.message), '[build alpine]')"
     container: azul/zulu-openjdk-alpine:8
     steps:
     - uses: actions/checkout@v2
@@ -186,7 +186,7 @@ jobs:
         path: |
           ~/.m2
           build/nix
-        key: alpline-akumuli-0.8.80
+        key: alpine-akumuli-0.8.80
     - name: Build
       run: |
         apk add --no-cache curl tar bash make cmake build-base
@@ -213,5 +213,5 @@ jobs:
     - name: Archive library
       uses: actions/upload-artifact@v1
       with:
-        name: libtsdb4j-alpline
+        name: libtsdb4j-alpine
         path: src/main/resources/META-INF/libtsdb4j.so

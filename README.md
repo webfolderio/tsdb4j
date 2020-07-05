@@ -8,7 +8,7 @@ tsdb4j is a Java driver for [Akumuli](https://github.com/akumuli/Akumuli) which 
 
 * **Minimal third-party dependency**: tsdb4j avoids external dependencies except [Akumuli](https://github.com/akumuli/Akumuli) and [nanojson](https://github.com/mmastrac/nanojson).
 
-* **Multiplatform**: tsdb4j supports Windows, MacOS and Linux (Centos, Ubuntu, Alpline).
+* **Multiplatform**: tsdb4j supports Windows, MacOS and Linux (Centos, Ubuntu, Alpine).
 
 * **Zero Management, No Learning Curve**: It takes only seconds to download, install, and run it successfully.
 
@@ -23,7 +23,8 @@ __Note__: We only support LTS versions (8 & 11).
 
 Supported Platforms
 -----------------
-tsdb4j has been tested under Windows, Ubuntu, Centos, Alpline and MacOS.
+
+tsdb4j has been tested under Windows, Ubuntu, Centos, Alpine and MacOS.
 
 Example
 ------

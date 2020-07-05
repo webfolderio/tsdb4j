@@ -3,9 +3,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.webfolder</groupId>
-  <artifactId>tsdb4j-alpline</artifactId>
+  <artifactId>tsdb4j-alpine</artifactId>
   <version>1.0.0</version>
-  <name>tsdb4j-alpline</name>
+  <name>tsdb4j-alpine</name>
   <description>Java driver for Akumuli which makes time-series fast and easy.</description>
   <licenses>
     <license>
@@ -121,7 +121,7 @@
               <Built-By>WebFolder (https://webfolder.io)</Built-By>
               <Build-Time>${maven.build.timestamp}</Build-Time>
               <License>Apache 2.0</License>
-              <Implementation-Title>tsdb4j-alpline</Implementation-Title>
+              <Implementation-Title>tsdb4j-alpine</Implementation-Title>
               <Implementation-Version>1.0.0</Implementation-Version>
             </manifestEntries>
           </archive>
