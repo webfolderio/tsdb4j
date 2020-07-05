@@ -1,3 +1,5 @@
+![tsdb4j](https://github.com/webfolderio/tsdb4j/workflows/tsdb4j/badge.svg)
+
 ## What is tsdb4j
 
 tsdb4j is a Java driver for [Akumuli](https://github.com/akumuli/Akumuli) which makes time-series fast and easy.

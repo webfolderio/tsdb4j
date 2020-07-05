@@ -148,6 +148,7 @@ jobs:
         yum -y install java-11-openjdk-devel
         yum -y install wget
         yum -y install unzip
+        yum -y install maven
         mkdir -p archive
         cd archive
         if [ ! -d "cmake" ]; then
@@ -165,15 +166,6 @@ jobs:
         fi
     - name: Test
       run: |
-        mkdir -p archive
-        cd archive
-        if [ ! -d "maven" ]; then
-          wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-          tar xfz apache-maven-3.6.3-bin.tar.gz
-          mv apache-maven-3.6.3/ maven/
-        fi
-        export PATH=$PATH:$PWD/maven/bin
-        cd ..
         mvn --no-transfer-progress -q -B -DskipTests package
         mvn --no-transfer-progress test
     - name: Archive library
