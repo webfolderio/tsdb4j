@@ -165,8 +165,8 @@ jobs:
         fi
     - name: Test
       run: |
-       mkdir -p archive
-       cd archive
+        mkdir -p archive
+        cd archive
         if [ ! -d "maven" ]; then
           cd archive
           wget -q https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
