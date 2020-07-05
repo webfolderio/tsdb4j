@@ -145,7 +145,6 @@ jobs:
       run: |
         yum -y update
         yum -y group install "Development Tools"
-        yum -y install java-11-openjdk-devel
         yum -y install wget
         yum -y install unzip
         yum -y install maven
@@ -166,8 +165,8 @@ jobs:
         fi
     - name: Test
       run: |
-        mvn --no-transfer-progress -q -B -DskipTests package
-        mvn --no-transfer-progress test
+        mvn -q -B -DskipTests package
+        mvn test
     - name: Archive library
       uses: actions/upload-artifact@v1
       with:

@@ -1,4 +1,4 @@
-![tsdb4j](https://github.com/webfolderio/tsdb4j/workflows/tsdb4j/badge.svg)
+[![tsdb4j](https://github.com/webfolderio/tsdb4j/workflows/tsdb4j/badge.svg)](https://github.com/webfolderio/tsdb4j/actions)
 
 ## What is tsdb4j
 
