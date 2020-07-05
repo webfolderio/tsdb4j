@@ -230,4 +230,9 @@ make
 make install
 
 mkdir -p ../../../../src/main/resources/META-INF
-cp $INSTALL_DIR/lib/libtsdb4j.{so,dylib} ../../../../src/main/resources/META-INF
+
+case "$OSTYPE" in
+  darwin*)  cp $INSTALL_DIR/lib/libtsdb4j.dylib ../../../../src/main/resources/META-INF ;;
+  linux*)   cp $INSTALL_DIR/lib/libtsdb4j.so ../../../../src/main/resources/META-INF ;;
+  *)        echo "unknown: $OSTYPE" && exit -1 ;;
+esac
