@@ -4,7 +4,44 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.webfolder</groupId>
   <artifactId>tsdb4j</artifactId>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
+  <name>tsdb4j</name>
+  <description>Java driver for Akumuli which makes time-series fast and easy.</description>
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>https://github.com/webfolderio/tsdb4j/blob/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://github.com/webfolderio/tsdb4j.git</url>
+  </scm>
+  <url>https://webfolder.io</url>
+  <organization>
+    <name>WebFolder OÜ</name>
+    <url>https://webfolder.io</url>
+  </organization>
+  <developers>
+    <developer>
+      <name>WebFolder</name>
+      <email>support@webfolder.io</email>
+      <timezone>GMT+2</timezone>
+      <organization>WebFolder OÜ</organization>
+      <url>https://webfolder.io</url>
+      <organizationUrl>https://webfolder.io</organizationUrl>
+    </developer>
+  </developers>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+  </distributionManagement>
   <build>
     <plugins>
       <plugin>
@@ -13,6 +50,18 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -35,6 +84,31 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.8</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -47,6 +121,9 @@
               <Built-By>WebFolder (https://webfolder.io)</Built-By>
               <Build-Time>${maven.build.timestamp}</Build-Time>
               <License>Apache 2.0</License>
+              <Implementation-Title>tsdb4j</Implementation-Title>
+              <Implementation-Version>1.0.0</Implementation-Version>
+              <Automatic-Module-Name>io.webfolder.tsdb4j</Automatic-Module-Name>
             </manifestEntries>
           </archive>
         </configuration>
