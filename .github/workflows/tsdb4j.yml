@@ -156,6 +156,7 @@ jobs:
           mv cmake-3.17.3-Linux-x86_64/ cmake/
         fi
         export PATH=$PATH:$PWD/cmake/bin
+        cd ..
         cd build/nix
         if [ -f "install/lib/libakumuli.a" ]; then
           FAST_BUILD=true ./build.sh
