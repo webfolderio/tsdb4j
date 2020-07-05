@@ -14,6 +14,7 @@ Supported Java Versions
 -----------------------
 
 Oracle/OpenJDK, GraalVM & Substrate VM.
+
 Both the JRE and the JDK are suitable for use with this library.
 
 __Note__: We only support LTS versions (8 & 11).
